@@ -28,15 +28,30 @@ void seq_align(char *x, char *y, int n, int m, int gap_cost, int mismatch[128][1
     }
 }
 
+void find_match(int match[], int n, int m) {
+    while (n && m) {
+        if (OPT[n - 1][m - 1] < OPT[n - 1][m] and OPT[n - 1][m - 1] < OPT[n][m - 1]) {
+            if (OPT[n - 1][m - 1] == OPT[n][m])
+                match[n] = m;
+            n -= 1;
+            m -= 1;
+        } else if (OPT[n - 1][m] < OPT[n][m - 1])
+            n -= 1;
+        else
+            m -= 1;
+    }
+}
+
 int main() {
     int gap_cost = 1;
-    int n, m;
+    int n, m, tn;
     char x[1000], y[1000];
     int mismatch[128][128];
+    int match[1000];
     for (int i = 0; i < 128; ++i) {
         for (int j = 0; j < 128; ++j) {
             if (i == j) mismatch[i][j] = 0;
-            else mismatch[i][j] = 1;
+            else mismatch[i][j] = 2;
         }
     }
 
@@ -45,17 +60,34 @@ int main() {
     infile.open("test.in");
     outfile.open("test.out");
 
-    infile >> n >> m;
-    for (int i = 0; i < n; ++i) {
-        infile >> x[i];
-    }
-    for (int j = 0; j < m; ++j) {
-        infile >> y[j];
-    }
+    infile >> tn;
+    for (int tid = 1; tid <= tn; ++tid) {
+        infile >> n >> m;
+        for (int i = 0; i < n; ++i) {
+            infile >> x[i];
+        }
+        for (int j = 0; j < m; ++j) {
+            infile >> y[j];
+        }
 
-    seq_align(x, y, n, m, gap_cost, mismatch);
+        seq_align(x, y, n, m, gap_cost, mismatch);
 
-    outfile << OPT[n][m];
+        outfile << OPT[n][m] << endl;
+
+        find_match(match,n,m);
+        for (int i = 1; i <= n; ++i) {
+            if (match[i])
+                outfile << i << ' ' << match[i] << endl;
+        }
+
+        cout << "OPT matrix:" << endl;
+        for (int i = 1; i <= n; ++i) {
+            for (int j = 1; j <= m; ++j) {
+                cout << OPT[i][j] << ' ';
+            }
+            cout << endl;
+        }
+    }
 
     infile.close();
     outfile.close();
